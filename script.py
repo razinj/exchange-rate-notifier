@@ -25,7 +25,11 @@ def send_email_mg(content: str):
     if not content:
         raise ValueError("Content is required")
 
-    subject = f"{date.today()} - {TARGET_RATE.upper() if TARGET_RATE else ""}/{COMPARISON_RATE.upper() if COMPARISON_RATE else ""} - Exchange Rate above threshold ({float(THRESHOLD_RATE if THRESHOLD_RATE else 0):.2f})"
+    today_tmp = date.today()
+    target_rate_tmp = TARGET_RATE.upper() if TARGET_RATE else ""
+    comp_rate_tmp = COMPARISON_RATE.upper() if COMPARISON_RATE else ""
+    threshold_rate_tmp = float(THRESHOLD_RATE) if THRESHOLD_RATE else 0
+    subject = f"{today_tmp} - {target_rate_tmp}/{comp_rate_tmp} - Exchange Rate above threshold ({threshold_rate_tmp:.2f})"
 
     # Construct the email data
     data = {"from": MAILGUN_FROM, "to": MAILGUN_TO, "subject": subject, "text": content}
@@ -118,7 +122,10 @@ def main(
 if __name__ == "__main__":
     threshold_rate, target_currency, comparison_currency = prepare_inputs()
     # exchange_rates = fetch_exchange_rates()
-    with open("exchange_rates.json", "r") as file:
+    import os
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, "exchange_rates.json")
+    with open(filename, "r") as file:
         exchange_rates = json.load(file)
     print(f"Data timestamp: {date.fromtimestamp(exchange_rates['timestamp'])}")
     main(exchange_rates, threshold_rate, target_currency, comparison_currency)

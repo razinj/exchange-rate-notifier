@@ -1,0 +1,30 @@
+name: "schedule"
+
+on:
+  schedule:
+    - cron: "30 * * * *"
+    # - cron: "30 8-22 * * *"
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create Env. File
+        run: |
+          echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
+          echo "${{ secrets.THRESHOLD_RATE }}" >> .env
+
+      - name: Run Script
+        run: python script.py

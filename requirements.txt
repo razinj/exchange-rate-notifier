@@ -3,3 +3,4 @@ python-dotenv
 black
 isort
 mypy
+flake8

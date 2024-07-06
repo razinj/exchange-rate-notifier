@@ -29,10 +29,15 @@ def send_email_mg(content: str):
     target_rate_tmp = TARGET_RATE.upper() if TARGET_RATE else ""
     comp_rate_tmp = COMPARISON_RATE.upper() if COMPARISON_RATE else ""
     threshold_rate_tmp = float(THRESHOLD_RATE) if THRESHOLD_RATE else 0
-    subject = f"{today_tmp} - {target_rate_tmp}/{comp_rate_tmp} - Exchange Rate above threshold ({threshold_rate_tmp:.2f})"
+    subject = f"{today_tmp} - {target_rate_tmp}/{comp_rate_tmp} - Exchange Rate above threshold ({threshold_rate_tmp:.2f})"  # noqa: E501
 
     # Construct the email data
-    data = {"from": MAILGUN_FROM, "to": MAILGUN_TO, "subject": subject, "text": content}
+    data = {
+        "from": MAILGUN_FROM,
+        "to": MAILGUN_TO,
+        "subject": subject,
+        "text": content,
+    }
 
     # Mailgun API endpoint
     url = f"https://api.eu.mailgun.net/v3/{MAILGUN_DOMAIN}/messages"
@@ -83,17 +88,17 @@ def calculate_cross_rate(
 def check_rate_and_notify(current_rate: float, threshold_rate: float) -> None:
     if current_rate >= threshold_rate:
         print(
-            f"The current exchange rate ({current_rate:.2f}) is equal to or higher than the threshold rate ({threshold_rate:.2f}).\nData Captured on {time.strftime('%H:%M:%S')}"
+            f"The current exchange rate ({current_rate:.2f}) is equal to or higher than the threshold rate ({threshold_rate:.2f}).\nData Captured on {time.strftime('%H:%M:%S')}"  # noqa: E501
         )
         send_email_mg(
-            f"The current exchange rate ({current_rate:.2f}) is equal to or higher than the threshold rate ({threshold_rate:.2f}).\nData Captured on {time.strftime('%H:%M:%S')}",
+            f"The current exchange rate ({current_rate:.2f}) is equal to or higher than the threshold rate ({threshold_rate:.2f}).\nData Captured on {time.strftime('%H:%M:%S')}",  # noqa: E501
         )
     else:
         print(
-            f"The current exchange rate ({current_rate:.2f}) is below the threshold rate ({threshold_rate:.2f}).\nData Captured on {time.strftime('%H:%M:%S')}"
+            f"The current exchange rate ({current_rate:.2f}) is below the threshold rate ({threshold_rate:.2f}).\nData Captured on {time.strftime('%H:%M:%S')}"  # noqa: E501
         )
         send_email_mg(
-            f"The current exchange rate ({current_rate:.2f}) is below the threshold rate ({threshold_rate:.2f}).\nData Captured on {time.strftime('%H:%M:%S')}",
+            f"The current exchange rate ({current_rate:.2f}) is below the threshold rate ({threshold_rate:.2f}).\nData Captured on {time.strftime('%H:%M:%S')}",  # noqa: E501
         )
 
 
@@ -103,7 +108,7 @@ def main(
     target_currency: str,
     comparison_currency: str,
 ) -> None:
-    # Get the rates for the target and comparison currencies againts the base currency
+    # Get the rates for the target and comparison currencies againts the base currency    # noqa: E501
     usd_to_target_rate = exchange_rates["rates"][target_currency]
     usd_to_comparison_rate = exchange_rates["rates"][comparison_currency]
 
@@ -113,7 +118,7 @@ def main(
     )
 
     print(
-        f"Calculated {comparison_currency} to {target_currency} rate: {target_to_comparison_rate:.2f}"
+        f"Calculated {comparison_currency} to {target_currency} rate: {target_to_comparison_rate:.2f}"  # noqa: E501
     )
 
     check_rate_and_notify(target_to_comparison_rate, threshold_rate)
@@ -121,11 +126,12 @@ def main(
 
 if __name__ == "__main__":
     threshold_rate, target_currency, comparison_currency = prepare_inputs()
-    # exchange_rates = fetch_exchange_rates()
-    import os
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, "exchange_rates.json")
-    with open(filename, "r") as file:
-        exchange_rates = json.load(file)
+    exchange_rates = fetch_exchange_rates()
+    # import os
+
+    # dirname = os.path.dirname(__file__)
+    # filename = os.path.join(dirname, "exchange_rates.json")
+    # with open(filename, "r") as file:
+    #     exchange_rates = json.load(file)
     print(f"Data timestamp: {date.fromtimestamp(exchange_rates['timestamp'])}")
     main(exchange_rates, threshold_rate, target_currency, comparison_currency)

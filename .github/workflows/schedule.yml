@@ -2,8 +2,7 @@ name: "schedule"
 
 on:
   schedule:
-    - cron: "30 * * * *"
-    # - cron: "30 8-22 * * *"
+    - cron: "30 8-22 * * *"
 
 jobs:
   main:

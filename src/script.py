@@ -1,49 +1,26 @@
 import os
 import typing as t
-from datetime import date
 
 import httpx
 from dotenv import load_dotenv
 
+from src.email_client import send_email_mg
+
 load_dotenv()
 
 OER_APP_ID = os.getenv("OER_APP_ID")
-MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
-MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
-MAILGUN_FROM = os.getenv("MAILGUN_FROM")
-MAILGUN_TO = os.getenv("MAILGUN_TO")
 TARGET_CURRENCY = os.getenv("TARGET_CURRENCY")
 COMPARISON_CURRENCY = os.getenv("COMPARISON_CURRENCY")
 THRESHOLD_RATE = os.getenv("THRESHOLD_RATE")
 
 
-def send_email_mg(content: str, current_exchange_rate: float) -> None:
-    if not MAILGUN_DOMAIN or not MAILGUN_API_KEY or not MAILGUN_FROM or not MAILGUN_TO:
-        raise ValueError("All mail variables are required")
-
-    today = date.today()
+def send_email(content: str, current_exchange_rate: float) -> None:
     target_currency = TARGET_CURRENCY.upper() if TARGET_CURRENCY else ""
     comparison_currency = COMPARISON_CURRENCY.upper() if COMPARISON_CURRENCY else ""
     threshold_rate = float(THRESHOLD_RATE) if THRESHOLD_RATE else 0
-    subject = f"{today} - {target_currency}/{comparison_currency} - Current exchange rate {current_exchange_rate:.2f} is above threshold {threshold_rate:.2f}"  # noqa: E501
+    subject = f"{target_currency}/{comparison_currency} - Current exchange rate {current_exchange_rate:.2f} is above threshold {threshold_rate:.2f}"  # noqa: E501
 
-    data: t.Dict[str, str] = {
-        "from": MAILGUN_FROM,
-        "to": MAILGUN_TO,
-        "subject": subject,
-        "text": content,
-    }
-
-    response = httpx.post(
-        url=f"https://api.eu.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
-        auth=("api", MAILGUN_API_KEY),
-        data=data,
-    )
-
-    if response.status_code == 200:
-        print("Email sent successfully!")
-    else:
-        print("Failed to send email: ", response.text)
+    send_email_mg(subject, content)
 
 
 def fetch_exchange_rates() -> t.Dict[str, t.Any]:

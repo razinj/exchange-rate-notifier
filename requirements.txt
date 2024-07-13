@@ -4,3 +4,5 @@ black
 isort
 mypy
 flake8
+pytz
+types-pytz

@@ -6,10 +6,10 @@ lint:
 	mypy .
 	flake8 .
 
-check-formatting:
+format-ci:
 	black . --check
 	isort . --check
 
-check-linting:
+lint-ci:
 	mypy .
 	flake8 .

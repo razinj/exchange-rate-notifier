@@ -2,7 +2,7 @@ name: "schedule"
 
 on:
   schedule:
-    - cron: "30 8-22 * * *"
+    - cron: "30 0 * * *"
 
 jobs:
   main:
@@ -15,15 +15,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: "pip"
 
       - name: Install Dependencies
-        run: pip install -r requirements.txt
+        run: pip install --no-cache-dir pytz
 
       - name: Create Env. File
         run: |
           echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
-          echo "${{ secrets.THRESHOLD_RATE }}" >> .env
+          echo "INITIAL_TZ_OFFSET=2:00:00" >> .env
+          echo "TIMEZONE=Europe/Berlin" >> .env
 
       - name: Run Script
-        run: python src/script.py
+        run: python src/timezone-change-notifier.py

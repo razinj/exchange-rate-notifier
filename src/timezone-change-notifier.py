@@ -4,7 +4,7 @@ import os
 import pytz
 from dotenv import load_dotenv
 
-from src.email_client import send_email_mg
+from email_client import send_email_mg  # type: ignore
 
 load_dotenv()
 

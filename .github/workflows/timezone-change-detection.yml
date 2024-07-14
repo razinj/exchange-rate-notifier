@@ -17,7 +17,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Dependencies
-        run: pip install --no-cache-dir pytz
+        run: pip install --no-cache-dir requirements.txt
 
       - name: Create Env. File
         run: |

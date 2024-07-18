@@ -1,4 +1,4 @@
-name: "schedule"
+name: "timezone-change-detection"
 
 on:
   schedule:
@@ -17,7 +17,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Dependencies
-        run: pip install --no-cache-dir requirements.txt
+        run: pip install --no-cache-dir -r requirements.txt
 
       - name: Create Env. File
         run: |

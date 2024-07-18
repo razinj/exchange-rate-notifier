@@ -69,7 +69,7 @@ def check_and_notify(
     if target_to_comparison_currency >= threshold_rate:
         message = f"The current exchange rate {target_to_comparison_currency:.2f} {target_currency} is equal to or higher than the threshold rate {threshold_rate:.2f} {target_currency}."  # noqa: E501
         print(message)
-        send_email_mg(message, target_to_comparison_currency)
+        send_email(message, target_to_comparison_currency)
     else:
         print(
             f"The current exchange rate {target_to_comparison_currency:.2f} {target_currency} is below the threshold rate {threshold_rate:.2f} {target_currency}."  # noqa: E501

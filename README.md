@@ -2,7 +2,7 @@
 
 A script that fetches the exchange rates (USD base) from [OpenExchangeRate](https://openexchangerates.org) and sends an email notification if the rate is above the defined threshold for the given currencies.
 
-The script runs on a scheduled GitHub Actions workflow every 1h between 8-22 (in theory, but it will never be exactly one hour, see [here](https://upptime.js.org/blog/2021/01/22/github-actions-schedule-not-working/) for more information).
+The script runs on a defined scheduled GitHub Actions workflow (in theory, but it will never be on the exact defined timing, see [here](https://upptime.js.org/blog/2021/01/22/github-actions-schedule-not-working/) for more information).
 
 ## Run
 

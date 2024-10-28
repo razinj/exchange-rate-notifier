@@ -2,7 +2,7 @@ name: "timezone-change-detection"
 
 on:
   schedule:
-    - cron: "20 22 * * *" # Using UTC timezone
+    - cron: "20 7 * * *" # Using UTC timezone
 
 jobs:
   main:

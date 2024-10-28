@@ -2,7 +2,7 @@ name: "schedule"
 
 on:
   schedule:
-    - cron: "20 6,16 * * *" # Using UTC timezone
+    - cron: "20 7,17 * * *" # Using UTC timezone
 
 jobs:
   main:

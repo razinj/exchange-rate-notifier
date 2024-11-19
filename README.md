@@ -4,7 +4,7 @@ A script that fetches the exchange rates (USD base) from [OpenExchangeRate](http
 
 The script runs on a defined scheduled GitHub Actions workflow (in theory, but it will never be on the exact defined timing, see [here](https://upptime.js.org/blog/2021/01/22/github-actions-schedule-not-working/) for more information).
 
-> **Note:** These scripts were tested and used with **Python 3.12**
+> **Note:** This script was tested and used with Python 3.12
 
 ## Run
 

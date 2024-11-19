@@ -62,10 +62,11 @@ def prepare_inputs() -> t.Tuple[float, str, str]:
     return float(THRESHOLD_RATE), TARGET_CURRENCY.upper(), COMPARISON_CURRENCY.upper()
 
 
-def check_and_notify(exchange_rates: t.Dict[str, t.Any]) -> None:
+def check_and_notify() -> None:
+    exchange_rates = fetch_exchange_rates()
     threshold_rate, target_currency, comparison_currency = prepare_inputs()
 
-    # Get the rates for the target and comparison currencies againts the base currency (USD)  # noqa: E501
+    # Get the rates for the target and comparison currencies againts the base currency (USD)
     usd_to_target_currency = exchange_rates["rates"][target_currency]
     usd_to_comparison_currency = exchange_rates["rates"][comparison_currency]
 
@@ -73,7 +74,7 @@ def check_and_notify(exchange_rates: t.Dict[str, t.Any]) -> None:
     target_to_comparison_currency = usd_to_target_currency / usd_to_comparison_currency
 
     print(
-        f"Calculated {comparison_currency} to {target_currency} rate is {target_to_comparison_currency:.2f}"  # noqa: E501
+        f"Calculated {comparison_currency} to {target_currency} rate is {target_to_comparison_currency:.2f}"
     )
 
     if target_to_comparison_currency >= threshold_rate:
@@ -89,4 +90,4 @@ def check_and_notify(exchange_rates: t.Dict[str, t.Any]) -> None:
 
 
 if __name__ == "__main__":
-    check_and_notify(exchange_rates=fetch_exchange_rates())
+    check_and_notify()

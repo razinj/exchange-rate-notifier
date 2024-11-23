@@ -17,11 +17,8 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Create Env. File & Run Script
-        env:
-          ENV_FILE_CONTENT: ${{ secrets.ENV_FILE_CONTENT }}
-          THRESHOLD_RATE: ${{ secrets.THRESHOLD_RATE }}
         run: |
           set -e
-          echo "$ENV_FILE_CONTENT" > .env
-          echo "$THRESHOLD_RATE" >> .env
+          echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
+          echo "${{ secrets.THRESHOLD_RATE }}" >> .env
           python src/script.py

@@ -23,18 +23,16 @@ The script runs on a defined scheduled GitHub Actions workflow (in theory, but i
 
 ## Run
 
-Setup and install dependencies:
+Install dependencies:
 
 ```shell
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+poetry install
 ```
 
 Run the script:
 
 ```shell
-python src/script.py
+make run
 ```
 
 ## Development

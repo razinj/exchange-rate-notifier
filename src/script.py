@@ -6,20 +6,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OER_APP_ID = os.getenv("OER_APP_ID")
-TARGET_CURRENCY = os.getenv("TARGET_CURRENCY")
-COMPARISON_CURRENCY = os.getenv("COMPARISON_CURRENCY")
-THRESHOLD_RATE = os.getenv("THRESHOLD_RATE")
-MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
-MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
-MAILGUN_FROM = os.getenv("MAILGUN_FROM")
-MAILGUN_TO = os.getenv("MAILGUN_TO")
+OER_APP_ID = os.environ["OER_APP_ID"]
+TARGET_CURRENCY = os.environ["TARGET_CURRENCY"]
+COMPARISON_CURRENCY = os.environ["COMPARISON_CURRENCY"]
+THRESHOLD_RATE = os.environ["THRESHOLD_RATE"]
+MAILGUN_DOMAIN = os.environ["MAILGUN_DOMAIN"]
+MAILGUN_API_KEY = os.environ["MAILGUN_API_KEY"]
+MAILGUN_FROM = os.environ["MAILGUN_FROM"]
+MAILGUN_TO = os.environ["MAILGUN_TO"]
 
 
 def fetch_exchange_rates() -> t.Dict[str, t.Any]:
-    if not OER_APP_ID:
-        raise ValueError("OER_APP_ID is required")
-
     api_url = "https://openexchangerates.org/api/latest.json"
     params = {"app_id": OER_APP_ID}
     response = httpx.get(api_url, params=params)
@@ -30,9 +27,6 @@ def fetch_exchange_rates() -> t.Dict[str, t.Any]:
 
 
 def send_email(subject: str, content: str) -> None:
-    if not MAILGUN_DOMAIN or not MAILGUN_API_KEY or not MAILGUN_FROM or not MAILGUN_TO:
-        raise ValueError("All mail variables are required")
-
     data: t.Dict[str, str] = {
         "from": MAILGUN_FROM,
         "to": MAILGUN_TO,
@@ -53,9 +47,6 @@ def send_email(subject: str, content: str) -> None:
 
 
 def prepare_inputs() -> t.Tuple[float, str, str]:
-    if not THRESHOLD_RATE or not TARGET_CURRENCY or not COMPARISON_CURRENCY:
-        raise ValueError("Rate and currencies are required")
-
     if float(THRESHOLD_RATE) < 0:
         raise ValueError("Threshold should be a positive number")
 

@@ -1,4 +1,4 @@
-# Exchange Rate Notifier
+# Exchange Rate Notifier 
 
 A script that fetches the exchange rates (USD base) from [OpenExchangeRate](https://openexchangerates.org) and sends an email notification if the rate is above the defined threshold for the given currencies.
 

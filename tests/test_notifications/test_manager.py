@@ -27,10 +27,7 @@ class TestBuildMailgunUrl:
         result = _build_mailgun_url()
 
         # Assert
-        assert (
-            result
-            == "mailgun://test.mailgun.org/test_key?from=from@test.com&to=to@test.com"
-        )
+        assert result == "mailgun://_@test.mailgun.org/test_key/to@test.com/?region=eu"
 
     def test_returns_none_when_missing_vars(self, monkeypatch):
         """Test returns None when Mailgun vars missing."""
@@ -56,6 +53,23 @@ class TestBuildMailgunUrl:
 
         # Assert
         assert result is None
+
+    def test_handles_multiple_emails(self, monkeypatch):
+        """Test URL built correctly with multiple to addresses."""
+        # Arrange
+        monkeypatch.setenv("MAILGUN_DOMAIN", "test.mailgun.org")
+        monkeypatch.setenv("MAILGUN_API_KEY", "test_key")
+        monkeypatch.setenv("MAILGUN_FROM", "from@test.com")
+        monkeypatch.setenv("MAILGUN_TO", "email1@test.com, email2@test.com")
+
+        # Act
+        result = _build_mailgun_url()
+
+        # Assert
+        assert (
+            result
+            == "mailgun://_@test.mailgun.org/test_key/email1@test.com/email2@test.com/?region=eu"
+        )
 
 
 class TestBuildGotifyUrl:
@@ -132,8 +146,9 @@ class TestGetNotificationManager:
         monkeypatch.setenv("MAILGUN_API_KEY", "test_key")
         monkeypatch.setenv("MAILGUN_FROM", "from@test.com")
         monkeypatch.setenv("MAILGUN_TO", "to@test.com")
+        monkeypatch.delenv("GOTIFY_URL", raising=False)
 
-        mock_apprise = mocker.patch("src.notifications.manager.apprise.Apprise")
+        mock_apprise = mocker.patch("notifications.manager.apprise.Apprise")
         mock_instance = MagicMock()
         mock_apprise.return_value = mock_instance
 
@@ -149,8 +164,9 @@ class TestGetNotificationManager:
         # Arrange
         monkeypatch.setenv("GOTIFY_URL", "https://gotify.example.com")
         monkeypatch.setenv("GOTIFY_TOKEN", "abc123")
+        monkeypatch.delenv("MAILGUN_DOMAIN", raising=False)
 
-        mock_apprise = mocker.patch("src.notifications.manager.apprise.Apprise")
+        mock_apprise = mocker.patch("notifications.manager.apprise.Apprise")
         mock_instance = MagicMock()
         mock_apprise.return_value = mock_instance
 
@@ -171,7 +187,7 @@ class TestGetNotificationManager:
         monkeypatch.setenv("GOTIFY_URL", "https://gotify.example.com")
         monkeypatch.setenv("GOTIFY_TOKEN", "abc123")
 
-        mock_apprise = mocker.patch("src.notifications.manager.apprise.Apprise")
+        mock_apprise = mocker.patch("notifications.manager.apprise.Apprise")
         mock_instance = MagicMock()
         mock_apprise.return_value = mock_instance
 
@@ -187,7 +203,7 @@ class TestGetNotificationManager:
         monkeypatch.delenv("MAILGUN_DOMAIN", raising=False)
         monkeypatch.delenv("GOTIFY_URL", raising=False)
 
-        mock_apprise = mocker.patch("src.notifications.manager.apprise.Apprise")
+        mock_apprise = mocker.patch("notifications.manager.apprise.Apprise")
         mock_instance = MagicMock()
         mock_apprise.return_value = mock_instance
 
@@ -204,7 +220,7 @@ class TestNotify:
     def test_sends_notification_successfully(self, mocker):
         """Test notify sends notification and returns True."""
         # Arrange
-        mock_apprise = mocker.patch("src.notifications.manager.apprise.Apprise")
+        mock_apprise = mocker.patch("notifications.manager.apprise.Apprise")
         mock_instance = MagicMock()
         mock_instance.notify.return_value = True
         mock_apprise.return_value = mock_instance
@@ -222,7 +238,7 @@ class TestNotify:
         """Test returns False when no notification targets configured."""
         # Arrange
         mock_get_manager = mocker.patch(
-            "src.notifications.manager.get_notification_manager"
+            "notifications.manager.get_notification_manager"
         )
         mock_get_manager.return_value = None
 
@@ -235,7 +251,7 @@ class TestNotify:
     def test_returns_false_on_failure(self, mocker):
         """Test returns False when notification fails."""
         # Arrange
-        mock_apprise = mocker.patch("src.notifications.manager.apprise.Apprise")
+        mock_apprise = mocker.patch("notifications.manager.apprise.Apprise")
         mock_instance = MagicMock()
         mock_instance.notify.return_value = False
         mock_apprise.return_value = mock_instance

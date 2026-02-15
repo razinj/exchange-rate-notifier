@@ -11,13 +11,16 @@ def _build_mailgun_url() -> t.Optional[str]:
     domain = os.environ.get("MAILGUN_DOMAIN", "").strip()
     api_key = os.environ.get("MAILGUN_API_KEY", "").strip()
     from_addr = os.environ.get("MAILGUN_FROM", "").strip()
-    to_addr = os.environ.get("MAILGUN_TO", "").strip()
+    to_addrs = os.environ.get("MAILGUN_TO", "").strip()
 
-    if not all([domain, api_key, from_addr, to_addr]):
+    if not all([domain, api_key, from_addr, to_addrs]):
         return None
 
-    # apprise mailgun://domain/apikey?from=email&to=email
-    return f"mailgun://{domain}/{api_key}?from={from_addr}&to={to_addr}"
+    # Split multiple emails by comma and join with /
+    to_list = "/".join(email.strip() for email in to_addrs.split(","))
+
+    # Build URL: mailgun://user@domain/apikey/to1/to2/?region=eu
+    return f"mailgun://_@{domain}/{api_key}/{to_list}/?region=eu"
 
 
 def _build_gotify_url() -> t.Optional[str]:

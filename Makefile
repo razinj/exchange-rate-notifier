@@ -21,6 +21,7 @@ test:
 	poetry run pytest tests/ -v
 
 test-cov:
-	poetry run pytest tests/ -v --cov=src --cov-report=term-missing
+	poetry run pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=xml --cov-report=html
 
-test-ci: test-cov
+test-ci-cov:
+	poetry run pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=80

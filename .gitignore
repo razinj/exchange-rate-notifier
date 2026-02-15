@@ -3,3 +3,7 @@ __pycache__
 .venv
 .env
 *.json
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/

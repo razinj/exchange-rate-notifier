@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest  # noqa: F401
-
 from notifications.manager import (
     _build_gotify_url,
     _build_mailgun_url,
@@ -27,7 +25,10 @@ class TestBuildMailgunUrl:
         result = _build_mailgun_url()
 
         # Assert
-        assert result == "mailgun://_@test.mailgun.org/test_key/to@test.com/?region=eu"
+        assert (
+            result
+            == "mailgun://no-reply@test.mailgun.org/test_key/to@test.com/?region=eu&name=Exchange Rate Script"
+        )
 
     def test_returns_none_when_missing_vars(self, monkeypatch):
         """Test returns None when Mailgun vars missing."""
@@ -68,7 +69,7 @@ class TestBuildMailgunUrl:
         # Assert
         assert (
             result
-            == "mailgun://_@test.mailgun.org/test_key/email1@test.com/email2@test.com/?region=eu"
+            == "mailgun://no-reply@test.mailgun.org/test_key/email1@test.com/email2@test.com/?region=eu&name=Exchange Rate Script"  # noqa: E501
         )
 
 

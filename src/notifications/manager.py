@@ -20,7 +20,7 @@ def _build_mailgun_url() -> t.Optional[str]:
     to_list = "/".join(email.strip() for email in to_addrs.split(","))
 
     # Build URL: mailgun://user@domain/apikey/to1/to2/?region=eu
-    return f"mailgun://_@{domain}/{api_key}/{to_list}/?region=eu"
+    return f"mailgun://no-reply@{domain}/{api_key}/{to_list}/?region=eu&name=Exchange Rate Script"
 
 
 def _build_gotify_url() -> t.Optional[str]:

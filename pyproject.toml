@@ -11,7 +11,7 @@ apprise = "^1.8"
 [tool.poetry.group.dev.dependencies]
 mypy = "1.11"
 flake8 = "7.1"
-black = "24.4"
+black = "26.3.1"
 isort = "5.13"
 
 [tool.poetry.group.test.dependencies]

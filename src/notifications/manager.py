@@ -10,17 +10,21 @@ def _build_mailgun_url() -> t.Optional[str]:
     """Build apprise Mailgun URL from environment variables."""
     domain = os.environ.get("MAILGUN_DOMAIN", "").strip()
     api_key = os.environ.get("MAILGUN_API_KEY", "").strip()
-    from_addr = os.environ.get("MAILGUN_FROM", "").strip()
     to_addrs = os.environ.get("MAILGUN_TO", "").strip()
 
-    if not all([domain, api_key, from_addr, to_addrs]):
+    if not all([domain, api_key, to_addrs]):
         return None
 
     # Split multiple emails by comma and join with /
-    to_list = "/".join(email.strip() for email in to_addrs.split(","))
+    to_list = "/".join(email.strip() for email in to_addrs.split(",") if email.strip())
+    if not to_list:
+        return None
 
     # Build URL: mailgun://user@domain/apikey/to1/to2/?region=eu
-    return f"mailgun://no-reply@{domain}/{api_key}/{to_list}/?region=eu&name=Exchange Rate Script"
+    return (
+        f"mailgun://no-reply@{domain}/{api_key}/{to_list}/"
+        "?region=eu&name=Exchange Rate Script"
+    )
 
 
 def _build_gotify_url() -> t.Optional[str]:
@@ -79,7 +83,11 @@ def notify(subject: str, body: str) -> bool:
         print("[Notifications] Warning: No notification targets configured")
         return False
 
-    result = apobj.notify(body=body, title=subject)
+    result = apobj.notify(
+        body=body,
+        title=subject,
+        body_format=apprise.NotifyFormat.TEXT,
+    )
 
     success = bool(result)
 

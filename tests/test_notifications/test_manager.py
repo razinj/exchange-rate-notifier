@@ -18,7 +18,6 @@ class TestBuildMailgunUrl:
         # Arrange
         monkeypatch.setenv("MAILGUN_DOMAIN", "test.mailgun.org")
         monkeypatch.setenv("MAILGUN_API_KEY", "test_key")
-        monkeypatch.setenv("MAILGUN_FROM", "from@test.com")
         monkeypatch.setenv("MAILGUN_TO", "to@test.com")
 
         # Act
@@ -46,7 +45,6 @@ class TestBuildMailgunUrl:
         # Arrange
         monkeypatch.setenv("MAILGUN_DOMAIN", "")
         monkeypatch.setenv("MAILGUN_API_KEY", "test_key")
-        monkeypatch.setenv("MAILGUN_FROM", "from@test.com")
         monkeypatch.setenv("MAILGUN_TO", "to@test.com")
 
         # Act
@@ -60,7 +58,6 @@ class TestBuildMailgunUrl:
         # Arrange
         monkeypatch.setenv("MAILGUN_DOMAIN", "test.mailgun.org")
         monkeypatch.setenv("MAILGUN_API_KEY", "test_key")
-        monkeypatch.setenv("MAILGUN_FROM", "from@test.com")
         monkeypatch.setenv("MAILGUN_TO", "email1@test.com, email2@test.com")
 
         # Act
@@ -145,7 +142,6 @@ class TestGetNotificationManager:
         # Arrange
         monkeypatch.setenv("MAILGUN_DOMAIN", "test.mailgun.org")
         monkeypatch.setenv("MAILGUN_API_KEY", "test_key")
-        monkeypatch.setenv("MAILGUN_FROM", "from@test.com")
         monkeypatch.setenv("MAILGUN_TO", "to@test.com")
         monkeypatch.delenv("GOTIFY_URL", raising=False)
 
@@ -183,7 +179,6 @@ class TestGetNotificationManager:
         # Arrange
         monkeypatch.setenv("MAILGUN_DOMAIN", "test.mailgun.org")
         monkeypatch.setenv("MAILGUN_API_KEY", "test_key")
-        monkeypatch.setenv("MAILGUN_FROM", "from@test.com")
         monkeypatch.setenv("MAILGUN_TO", "to@test.com")
         monkeypatch.setenv("GOTIFY_URL", "https://gotify.example.com")
         monkeypatch.setenv("GOTIFY_TOKEN", "abc123")
@@ -232,7 +227,9 @@ class TestNotify:
         # Assert
         assert result is True
         mock_instance.notify.assert_called_once_with(
-            body="Test Body", title="Test Subject"
+            body="Test Body",
+            title="Test Subject",
+            body_format="text",
         )
 
     def test_returns_false_when_no_targets(self, mocker):

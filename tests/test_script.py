@@ -1,46 +1,9 @@
 """Tests for the main script module."""
 
-from unittest.mock import MagicMock, patch
-
-import httpx
 import pytest
 
-from script import check_and_notify, fetch_exchange_rates, prepare_inputs
-
-
-class TestFetchExchangeRates:
-    """Tests for fetch_exchange_rates function."""
-
-    @patch("script.httpx.get")
-    def test_successful_fetch(self, mock_get, mock_env_vars):
-        """Test successful API call returns exchange rates."""
-        # Arrange
-        mock_response = MagicMock()
-        mock_response.json.return_value = {"rates": {"EUR": 0.92}}
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Act
-        result = fetch_exchange_rates()
-
-        # Assert
-        assert "rates" in result
-        assert result["rates"]["EUR"] == 0.92
-        mock_get.assert_called_once()
-
-    @patch("script.httpx.get")
-    def test_api_error_raises_exception(self, mock_get, mock_env_vars):
-        """Test that API errors raise exceptions."""
-        # Arrange
-        mock_response = MagicMock()
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-            "Server error", request=MagicMock(), response=MagicMock()
-        )
-        mock_get.return_value = mock_response
-
-        # Act & Assert
-        with pytest.raises(httpx.HTTPStatusError):
-            fetch_exchange_rates()
+from rates.models import AggregatedRateResult, RateDetail
+from script import check_and_notify, prepare_inputs
 
 
 class TestPrepareInputs:
@@ -48,20 +11,23 @@ class TestPrepareInputs:
 
     def test_valid_inputs(self, mock_env_vars):
         """Test valid inputs are parsed correctly."""
-        # Act
-        threshold, target, comparison = prepare_inputs()
+        threshold, base, quote = prepare_inputs()
 
-        # Assert
         assert threshold == 0.9
-        assert target == "EUR"
-        assert comparison == "USD"
+        assert base == "EUR"
+        assert quote == "USD"
+
+    def test_raises_when_currency_vars_are_missing(self, monkeypatch, mock_env_vars):
+        """Missing base variable should raise ValueError."""
+        monkeypatch.delenv("BASE_CURRENCY", raising=False)
+
+        with pytest.raises(ValueError, match="BASE_CURRENCY is required"):
+            prepare_inputs()
 
     def test_negative_threshold_raises_error(self, monkeypatch, mock_env_vars):
         """Test that negative threshold raises ValueError."""
-        # Arrange
         monkeypatch.setenv("THRESHOLD_RATE", "-1.0")
 
-        # Act & Assert
         with pytest.raises(ValueError, match="positive number"):
             prepare_inputs()
 
@@ -70,39 +36,123 @@ class TestCheckAndNotify:
     """Tests for check_and_notify function."""
 
     def test_notifies_when_threshold_met(self, mocker, mock_env_vars):
-        """Test notification sent when rate >= threshold."""
-        # Arrange
+        """Test notification sent when aggregated rate >= threshold."""
+        details = [
+            RateDetail(
+                source="openexchangerates",
+                pair="EUR/USD",
+                status="success",
+                rate=0.95,
+            ),
+            RateDetail(
+                source="bank_al_maghrib",
+                pair="EUR/USD",
+                status="success",
+                rate=0.94,
+            ),
+        ]
+
+        mocker.patch("script.get_aggregation_method", return_value="median")
         mocker.patch(
-            "script.fetch_exchange_rates",
-            return_value={"rates": {"EUR": 0.95, "USD": 1.0}},
+            "script.get_enabled_provider_names",
+            return_value=["openexchangerates", "bank_al_maghrib"],
+        )
+        mocker.patch("script.get_min_successful_sources", return_value=1)
+        mocker.patch("script.fetch_rate_details", return_value=details)
+
+        mocker.patch(
+            "script.aggregate_rate_details",
+            return_value=AggregatedRateResult(
+                pair="EUR/USD",
+                aggregation_method="median",
+                aggregated_rate=0.945,
+                details=details,
+                successful_sources=2,
+                failed_sources=0,
+            ),
         )
         mock_notify = mocker.patch("script.notify")
 
-        # Act
         check_and_notify()
 
-        # Assert
         mock_notify.assert_called_once()
-        # Check that the notification message contains the rate
         call_args = mock_notify.call_args
-        assert "0.95" in call_args[0][0] or "0.95" in call_args[1].get("body", "")
+        assert "EUR/USD" in call_args[0][0]
+        assert "Source details" in call_args[0][1]
+        assert "openexchangerates" in call_args[0][1]
+        assert "bank_al_maghrib" in call_args[0][1]
 
     def test_no_notification_when_below_threshold(self, mocker, mock_env_vars):
-        """Test no notification when rate < threshold."""
-        # Arrange
+        """Test no notification when aggregated rate is below threshold."""
+        details = [
+            RateDetail(
+                source="openexchangerates",
+                pair="EUR/USD",
+                status="success",
+                rate=0.80,
+            )
+        ]
+
+        mocker.patch("script.get_aggregation_method", return_value="median")
         mocker.patch(
-            "script.fetch_exchange_rates",
-            return_value={"rates": {"EUR": 0.80, "USD": 1.0}},
+            "script.get_enabled_provider_names", return_value=["openexchangerates"]
         )
+        mocker.patch("script.get_min_successful_sources", return_value=1)
+        mocker.patch("script.fetch_rate_details", return_value=details)
+        mocker.patch(
+            "script.aggregate_rate_details",
+            return_value=AggregatedRateResult(
+                pair="EUR/USD",
+                aggregation_method="median",
+                aggregated_rate=0.80,
+                details=details,
+                successful_sources=1,
+                failed_sources=0,
+            ),
+        )
+
         mock_notify = mocker.patch("script.notify")
         mock_print = mocker.patch("builtins.print")
 
-        # Act
         check_and_notify()
 
-        # Assert
         mock_notify.assert_not_called()
-        # Verify the "below threshold" message was printed
         mock_print.assert_any_call(
-            "The current exchange rate 0.80 EUR is below the threshold rate 0.90 EUR."
+            "The current EUR/USD exchange rate is 0.8000, which is below the threshold rate 0.9000."
         )
+
+    def test_notifies_when_aggregation_fails_and_config_enabled(
+        self, mocker, monkeypatch, mock_env_vars
+    ):
+        """Aggregation failure should notify when configured."""
+        details = [
+            RateDetail(
+                source="openexchangerates",
+                pair="EUR/USD",
+                status="error",
+                error="network timeout",
+            )
+        ]
+
+        monkeypatch.setenv("NOTIFY_ON_AGGREGATION_FAILURE", "true")
+
+        mocker.patch("script.get_aggregation_method", return_value="median")
+        mocker.patch(
+            "script.get_enabled_provider_names", return_value=["openexchangerates"]
+        )
+        mocker.patch("script.get_min_successful_sources", return_value=1)
+        mocker.patch("script.validate_min_successful_sources", return_value=None)
+        mocker.patch("script.fetch_rate_details", return_value=details)
+        mocker.patch(
+            "script.aggregate_rate_details",
+            side_effect=ValueError("Not enough successful sources"),
+        )
+        mock_notify = mocker.patch("script.notify")
+
+        with pytest.raises(ValueError, match="Not enough successful sources"):
+            check_and_notify()
+
+        mock_notify.assert_called_once()
+        subject, message = mock_notify.call_args[0]
+        assert "Aggregation failed" in subject
+        assert "Not enough successful sources" in message

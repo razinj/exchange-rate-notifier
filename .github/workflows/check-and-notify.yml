@@ -2,7 +2,7 @@ name: "check-and-notify"
 
 on:
   schedule:
-    - cron: "20 5,17 * * *" # Using UTC timezone
+    - cron: "30 7,19 * * *" # Using UTC timezone
   workflow_dispatch:
 
 permissions:
